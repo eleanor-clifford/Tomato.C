@@ -104,7 +104,7 @@ void send_notification(char *title, char *description) {
            title, description);
 #else
   snprintf((char *)command, max_command_length,
-           "notify-send -u critical -t 30000 -a Tomato.C \"%s\" \"%s\" ", title,
+           "notify-send -u critical -t 15000 -a Tomato.C \"%s\" \"%s\" ", title,
            description);
 #endif
   (void)system((char *)command);
