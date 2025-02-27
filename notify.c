@@ -104,7 +104,7 @@ void send_notification(char *title, char *description) {
            title, description);
 #else
   snprintf((char *)command, max_command_length,
-           "notify-send -t 5000 -a Tomato.C \"%s\" \"%s\" ", title,
+           "notify-send -u critical -t 30000 -a Tomato.C \"%s\" \"%s\" ", title,
            description);
 #endif
   (void)system((char *)command);
@@ -116,8 +116,9 @@ void play_audio(char *sound_file) {
 
     char *command[max_audio_cmd_length];
 
+
     snprintf((char *)command, max_audio_cmd_length,
-             "mpv --no-vid --no-input-terminal --volume=50 %s/%s --really-quiet &",
+             "mpv --no-vid --no-input-terminal --volume=70 %s/%s --really-quiet &",
              SOUNDS, sound_file);
     (void)system((char *)command);
   }
