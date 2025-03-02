@@ -356,12 +356,12 @@ void handleInputs(appData *app) {
       case CTRLP:
       case 'p':
         if (app->currentMode >= 1 && app->currentMode <= 3)
-          app->pausedTimer = app->pausedTimer ^ 1;
+          app->pausedTimer ? unpauseTimer(app) : pauseTimer(app);
         break;
 
       case CTRLS:
       case 's':
-        if (app->currentMode >= 1 && app->currentMode <= 3) app->timer = 0;
+        if (app->currentMode >= 1 && app->currentMode <= 3) resetTimer(app, 0);
         break;
 
       case ESC:
@@ -398,11 +398,10 @@ void handleInputs(appData *app) {
           if (TIMERLOG == 1) endTimerLog(app);
           app->menuPos = 1;
           app->runOnce = 0;
-          app->pausedTimer = 0;
           app->currentMode = 0;
           app->frameTimer = 0;
-          app->timer = 0;
-          app->timerms = 0;
+          unpauseTimer(app);
+          resetTimer(app, 0);
         }
         break;
 
@@ -863,13 +862,13 @@ void mouseInput(appData *app, MEVENT event) {
     if (event.y == (app->middley - 7) && (app->middlex - 8) >= event.x &&
         event.x >= (app->middlex - 9)) {
       if (event.bstate & BUTTON1_PRESSED)
-        app->pausedTimer = app->pausedTimer ^ 1;
+        app->pausedTimer ? unpauseTimer(app) : pauseTimer(app);
     }
   }
   if (app->currentMode >= 1 && app->currentMode <= 3) {
     if (event.y == (app->middley - 7) && (app->middlex - 10) >= event.x &&
         event.x >= (app->middlex - 11)) {
-      if (event.bstate & BUTTON1_PRESSED) app->timer = 0;
+      if (event.bstate & BUTTON1_PRESSED) resetTimer(app, 0);
     }
   }
 }
@@ -878,7 +877,7 @@ void mouseInput(appData *app, MEVENT event) {
 void mainMenuInput(appData *app, char key) {
   if (key == 'E') {
     if (app->menuPos == 1) {
-      if (app->timer == 0) app->timer = app->workTime;
+      if (app->timer <= 0) resetTimer(app, app->workTime);
       app->frameTimer = 0;
       app->lastMode = app->currentMode;
       app->currentMode = 1;
@@ -916,7 +915,7 @@ void mainMenuInput(appData *app, char key) {
     if (app->menuPos != 4) app->menuPos++;
   } else if (key == 'R') {
     if (app->menuPos == 1) {
-      if (app->timer == 0) app->timer = app->workTime;
+      if (app->timer <= 0) resetTimer(app, app->workTime);
       app->frameTimer = 0;
       app->lastMode = app->currentMode;
       app->currentMode = 1;

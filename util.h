@@ -43,6 +43,9 @@ extern void endTimerLog(appData*);
 
 /* Time the pomodoros */
 extern void timer(appData*);
+extern void resetTimer(appData*, int time);
+extern void pauseTimer(appData *app);
+extern void unpauseTimer(appData *app);
 
 extern char* initTimerPath(const char*);
 extern int printTimerLog(const char*);

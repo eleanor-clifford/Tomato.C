@@ -258,7 +258,7 @@ void setLogVars(appData *app) {
   if (sscanf(lastline, "%d/%d WT %d D %d %d %d", &app->pomodoroCounter,
              &app->pomodoros, &app->timer, &app->workTime, &app->shortPause,
              &app->longPause) == 6) {
-    app->timer = (app->timer - app->workTime) * -1;
+    resetTimer(app, (app->timer - app->workTime) * -1);
     app->frameTimer = 0;
     app->lastMode = app->currentMode;
     app->currentMode = 1;
@@ -266,7 +266,7 @@ void setLogVars(appData *app) {
   } else if (sscanf(lastline, "%d/%d SP %d D %d %d %d", &app->pomodoroCounter,
                     &app->pomodoros, &app->timer, &app->workTime,
                     &app->shortPause, &app->longPause) == 6) {
-    app->timer = (app->timer - app->shortPause) * -1;
+    resetTimer(app, (app->timer - app->shortPause) * -1);
     app->frameTimer = 0;
     app->lastMode = app->currentMode;
     app->currentMode = 2;
@@ -274,7 +274,7 @@ void setLogVars(appData *app) {
   } else if (sscanf(lastline, "%d/%d LP %d D %d %d %d", &app->pomodoroCounter,
                     &app->pomodoros, &app->timer, &app->workTime,
                     &app->shortPause, &app->longPause) == 6) {
-    app->timer = (app->timer - app->longPause) * -1;
+    resetTimer(app, (app->timer - app->longPause) * -1);
     app->frameTimer = 0;
     app->lastMode = app->currentMode;
     app->currentMode = 3;
@@ -435,20 +435,43 @@ void endTimerLog(appData *app) {
   fclose(time);
 }
 
+void resetTimer(appData *app, int time) {
+  struct timespec now;
+  clock_gettime(CLOCK_REALTIME, &app->timerWallTimeStart);
+  app->timerTime = time;
+  app->timer = time;
+}
+
+void pauseTimer(appData *app) {
+  app->pausedTimer = 1;
+}
+
+void unpauseTimer(appData *app) {
+  // set start wall time in the past according to time remaining
+  int elapsed = app->timerTime - app->timer;
+  int elapsed_sec = elapsed / 8;
+  time_t elapsed_nsec = 125000000 * (time_t)(elapsed % 8);
+
+  struct timespec now;
+  clock_gettime(CLOCK_REALTIME, &now);
+
+  // nsec may end up negative, but this is fine
+  app->timerWallTimeStart.tv_nsec = now.tv_nsec - elapsed_nsec;
+  app->timerWallTimeStart.tv_sec = now.tv_sec - elapsed_sec;
+
+  app->pausedTimer = 0;
+}
+
 /* Time the pomodoros */
 void timer(appData *app) {
-  int sec = 60;
-  clock_t end = clock() + sec * (CLOCKS_PER_SEC);
-  if (clock() < end) {
-    if (app->pausedTimer != 1) {
-      app->timerms++;
-      if (app->timerms >= app->sfps) {
-        app->timerms = 0;
-        /* Debug */
-        // app->timer = app->timer - 60;
-        app->timer = app->timer - 1;
-      }
-    }
+  if (app->pausedTimer != 1) {
+    struct timespec now;
+    clock_gettime(CLOCK_REALTIME, &now);
+
+    time_t elapsed = (now.tv_sec - app->timerWallTimeStart.tv_sec) * 8
+                   + (now.tv_nsec - app->timerWallTimeStart.tv_nsec) / 125000000;
+    time_t timer = app->timerTime - elapsed;
+    app->timer = (timer > 0) ? timer : 0;
   }
 }
 

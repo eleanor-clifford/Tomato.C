@@ -11,6 +11,7 @@
 #ifndef TOMATO_H_
 #define TOMATO_H_
 #include <ncurses.h>
+#include <time.h>
 #ifdef MPV
 #include <mpv/client.h>
 #endif
@@ -96,9 +97,10 @@ struct appData {
   int needMainMenu;
   int frameTimer;
   int timer;
+  int timerTime;
+  struct timespec timerWallTimeStart;
   double sfps;
   int framems;
-  int timerms;
   int logoFrame;
   int coffeeFrame;
   int machineFrame;

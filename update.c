@@ -50,16 +50,16 @@ void updateNotepad(appData* app) {
     switch (app->lastMode) {
       case 1:
         if (app->autostartWork == 0 && app->pausedTimer == 0) {
-          app->pausedTimer = 1;
+          pauseTimer(app);
           notify("autostartwork");
           break;
         }
         if (app->pomodoroCounter == app->pomodoros) {
-          app->timer = app->longPause;
+          resetTimer(app, app->longPause);
           app->lastMode = 3;
           notify("longpause");
         } else {
-          app->timer = app->shortPause;
+          resetTimer(app, app->shortPause);
           app->lastMode = 2;
           notify("shortpause");
         }
@@ -67,12 +67,12 @@ void updateNotepad(appData* app) {
         break;
       case 2:
         if (app->autostartPause == 0 && app->pausedTimer == 0) {
-          app->pausedTimer = 1;
+          pauseTimer(app);
           notify("autostartpause");
           break;
         }
         notify("worktime");
-        app->timer = app->workTime;
+        resetTimer(app, app->workTime);
         app->frameTimer = 0;
         app->lastMode = 1;
         app->pomodoroCounter += 1;
@@ -95,7 +95,7 @@ void updateNotepad(appData* app) {
 
 /* Mode 0 (Main Menu) */
 void updateMainMenu(appData* app) {
-  app->pausedTimer = 0;
+  unpauseTimer(app);
   frameTimer(app);
 
   if (app->needResume == 0) {
@@ -127,14 +127,14 @@ void updateWorkTime(appData* app) {
   frameTimer(app);
   if (app->timer <= 0) {
     if (app->autostartWork == 0 && app->pausedTimer == 0) {
-      app->pausedTimer = 1;
+      pauseTimer(app);
       notify("autostartwork");
     } else {
       if (app->pomodoroCounter == app->pomodoros) {
-        app->timer = app->longPause;
+        resetTimer(app, app->longPause);
         app->currentMode = 3;
       } else {
-        app->timer = app->shortPause;
+        resetTimer(app, app->shortPause);
         app->currentMode = 2;
       }
       app->frameTimer = 0;
@@ -163,10 +163,10 @@ void updateShortPause(appData* app) {
   frameTimer(app);
   if (app->timer <= 0) {
     if (app->autostartPause == 0 && app->pausedTimer == 0) {
-      app->pausedTimer = 1;
+      pauseTimer(app);
       notify("autostartpause");
     } else {
-      app->timer = app->workTime;
+      resetTimer(app, app->workTime);
       app->frameTimer = 0;
       app->lastMode = app->currentMode;
       app->currentMode = 1;
@@ -205,7 +205,7 @@ void updateLongPause(appData* app) {
     app->pomodoroCounter = 0;
     if (TIMERLOG == 1) endTimerLog(app);
     notify("end");
-    app->timer = 0;
+    resetTimer(app, 0);
   }
 
   /* Beach Animation */

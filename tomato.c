@@ -12,6 +12,7 @@
 
 #include <locale.h>
 #include <math.h>
+#include <time.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,7 +82,9 @@ void initApp(appData *app) {
   app->lastMode = 0;
   app->currentMode = 0;
   app->timer = 0;
-  app->timerms = 0;
+  app->timerTime = 0;
+  app->timerWallTimeStart.tv_sec = 0;
+  app->timerWallTimeStart.tv_nsec = 0;
   app->needToLog = 0;
   app->needResume = 0;
   app->resume = 0;
